@@ -258,7 +258,7 @@
       // if captions are requested, add them
       if (slider.settings.captions) { appendCaptions(); }
       // check if startSlide is last slide
-      slider.active.last = slider.settings.startSlide === getPagerQty() - 1;
+      slider.active.last = slider.settings.startSlide === el.getPagerQty() - 1;
       // if video is true, set up the fitVids plugin
       if (slider.settings.video) { el.fitVids(); }
       if (slider.settings.preloadImages === 'all' || slider.settings.ticker) { preloadSelector = slider.children; }
@@ -327,7 +327,7 @@
       // bind the resize call to the window
       if (slider.settings.responsive) { $(window).bind('resize', resizeWindow); }
       // if auto is true and has more than 1 page, start the show
-      if (slider.settings.auto && slider.settings.autoStart && (getPagerQty() > 1 || slider.settings.autoSlideForOnePage)) { initAuto(); }
+      if (slider.settings.auto && slider.settings.autoStart && (el.getPagerQty() > 1 || slider.settings.autoSlideForOnePage)) { initAuto(); }
       // if ticker is true, start the ticker
       if (slider.settings.ticker) { initTicker(); }
       // if pager is requested, make the appropriate pager link active
@@ -359,7 +359,7 @@
         // if carousel, return a slice of children
         } else {
           // get the individual slide index
-          var currentIndex = slider.settings.moveSlides === 1 ? slider.active.index : slider.active.index * getMoveBy();
+          var currentIndex = slider.settings.moveSlides === 1 ? slider.active.index : slider.active.index * el.getMoveBy();
           // add the current slide to the children
           children = slider.children.eq(currentIndex);
           // cycle through the remaining "showing" slides
@@ -465,44 +465,6 @@
     };
 
     /**
-     * Returns the number of pages (one full viewport of slides is one "page")
-     */
-    var getPagerQty = function() {
-      var pagerQty = 0,
-      breakPoint = 0,
-      counter = 0;
-      // if moveSlides is specified by the user
-      if (slider.settings.moveSlides > 0) {
-        if (slider.settings.infiniteLoop) {
-          pagerQty = Math.ceil(slider.children.length / getMoveBy());
-        } else {
-          // when breakpoint goes above children length, counter is the number of pages
-          while (breakPoint < slider.children.length) {
-            ++pagerQty;
-            breakPoint = counter + getNumberSlidesShowing();
-            counter += slider.settings.moveSlides <= getNumberSlidesShowing() ? slider.settings.moveSlides : getNumberSlidesShowing();
-          }
-        }
-      // if moveSlides is 0 (auto) divide children length by sides showing, then round up
-      } else {
-        pagerQty = Math.ceil(slider.children.length / getNumberSlidesShowing());
-      }
-      return pagerQty;
-    };
-
-    /**
-     * Returns the number of individual slides by which to shift the slider
-     */
-    var getMoveBy = function() {
-      // if moveSlides was set by the user and moveSlides is less than number of slides showing
-      if (slider.settings.moveSlides > 0 && slider.settings.moveSlides <= getNumberSlidesShowing()) {
-        return slider.settings.moveSlides;
-      }
-      // if moveSlides is 0 (auto)
-      return getNumberSlidesShowing();
-    };
-
-    /**
      * Sets the slider's (el) left or top position
      */
     var setSlidePosition = function() {
@@ -525,9 +487,9 @@
       // if not last slide
       } else {
         // get the position of the first showing slide
-        position = slider.children.eq(slider.active.index * getMoveBy()).position();
+        position = slider.children.eq(slider.active.index * el.getMoveBy()).position();
         // check for last slide
-        if (slider.active.index === getPagerQty() - 1) { slider.active.last = true; }
+        if (slider.active.index === el.getPagerQty() - 1) { slider.active.last = true; }
         // set the respective position
         if (position !== undefined) {
           if (slider.settings.mode === 'horizontal') { setPositionProperty(-position.left, 'reset', 0); }
@@ -623,7 +585,7 @@
     var populatePager = function() {
       var pagerHtml = '',
       linkContent = '',
-      pagerQty = getPagerQty();
+      pagerQty = el.getPagerQty();
       // loop through each pager item
       for (var i = 0; i < pagerQty; i++) {
         linkContent = '';
@@ -844,8 +806,8 @@
           // set the new position
           position = slider.children.eq(0).position();
         // carousel, last slide
-        } else if (slider.active.index === getPagerQty() - 1 && slider.carousel) {
-          position = slider.children.eq((getPagerQty() - 1) * getMoveBy()).position();
+        } else if (slider.active.index === el.getPagerQty() - 1 && slider.carousel) {
+          position = slider.children.eq((el.getPagerQty() - 1) * el.getMoveBy()).position();
         // last slide
         } else if (slider.active.index === slider.children.length - 1) {
           position = slider.children.eq(slider.children.length - 1).position();
@@ -882,7 +844,7 @@
      * Updates the direction controls (checks if either should be hidden)
      */
     var updateDirectionControls = function() {
-      if (getPagerQty() === 1) {
+      if (el.getPagerQty() === 1) {
         slider.controls.prev.addClass('disabled');
         slider.controls.next.addClass('disabled');
       } else if (!slider.settings.infiniteLoop && slider.settings.hideControlOnEnd) {
@@ -891,7 +853,7 @@
           slider.controls.prev.addClass('disabled');
           slider.controls.next.removeClass('disabled');
         // if last slide
-        } else if (slider.active.index === getPagerQty() - 1) {
+        } else if (slider.active.index === el.getPagerQty() - 1) {
           slider.controls.next.addClass('disabled');
           slider.controls.prev.removeClass('disabled');
         // if any slide in the middle
@@ -1297,13 +1259,13 @@
     var setSlideIndex = function(slideIndex) {
       if (slideIndex < 0) {
         if (slider.settings.infiniteLoop) {
-          return getPagerQty() - 1;
+          return el.getPagerQty() - 1;
         }else {
           //we don't go to undefined slides
           return slider.active.index;
         }
       // if slideIndex is greater than children length, set active index to 0 (this happens during infinite loop)
-      } else if (slideIndex >= getPagerQty()) {
+      } else if (slideIndex >= el.getPagerQty()) {
         if (slider.settings.infiniteLoop) {
           return 0;
         } else {
@@ -1371,7 +1333,7 @@
       }
 
       // check if last slide
-      slider.active.last = slider.active.index >= getPagerQty() - 1;
+      slider.active.last = slider.active.index >= el.getPagerQty() - 1;
       // update the pager with active class
       if (slider.settings.pager || slider.settings.pagerCustom) { updatePagerActive(slider.active.index); }
       // // check for direction control update
@@ -1411,7 +1373,7 @@
           // horizontal carousel, going previous while on first slide (infiniteLoop mode)
         } else if (slider.carousel && slider.active.last && direction === 'prev') {
           // get the last child position
-          eq = slider.settings.moveSlides === 1 ? slider.settings.maxSlides - getMoveBy() : ((getPagerQty() - 1) * getMoveBy()) - (slider.children.length - slider.settings.maxSlides);
+          eq = slider.settings.moveSlides === 1 ? slider.settings.maxSlides - el.getMoveBy() : ((el.getPagerQty() - 1) * el.getMoveBy()) - (slider.children.length - slider.settings.maxSlides);
           lastChild = el.children('.bx-clone').eq(eq);
           position = lastChild.position();
         // if infinite loop and "Next" is clicked on the last slide
@@ -1422,7 +1384,7 @@
         // normal non-zero requests
         } else if (slideIndex >= 0) {
           //parseInt is applied to allow floats for slides/page
-          requestEl = slideIndex * parseInt(getMoveBy());
+          requestEl = slideIndex * parseInt(el.getMoveBy());
           position = slider.children.eq(requestEl).position();
         }
 
@@ -1438,7 +1400,7 @@
           slider.working = false;
         }
       }
-      if (slider.settings.ariaHidden) { applyAriaHiddenAttributes(slider.active.index * getMoveBy()); }
+      if (slider.settings.ariaHidden) { applyAriaHiddenAttributes(slider.active.index * el.getMoveBy()); }
     };
 
     /**
@@ -1547,15 +1509,15 @@
       if (!slider.settings.ticker) { setSlidePosition(); }
       // if active.last was true before the screen resize, we want
       // to keep it last no matter what screen size we end on
-      if (slider.active.last) { slider.active.index = getPagerQty() - 1; }
+      if (slider.active.last) { slider.active.index = el.getPagerQty() - 1; }
       // if the active index (page) no longer exists due to the resize, simply set the index as last
-      if (slider.active.index >= getPagerQty()) { slider.active.last = true; }
+      if (slider.active.index >= el.getPagerQty()) { slider.active.last = true; }
       // if a pager is being displayed and a custom pager is not being used, update it
       if (slider.settings.pager && !slider.settings.pagerCustom) {
         populatePager();
         updatePagerActive(slider.active.index);
       }
-      if (slider.settings.ariaHidden) { applyAriaHiddenAttributes(slider.active.index * getMoveBy()); }
+      if (slider.settings.ariaHidden) { applyAriaHiddenAttributes(slider.active.index * el.getMoveBy()); }
     };
 
     /**
@@ -1601,6 +1563,44 @@
       init();
       //store reference to self in order to access public functions later
       $(el).data('bxSlider', this);
+    };
+
+    /**
+     * Returns the number of pages (one full viewport of slides is one "page")
+     */
+    el.getPagerQty = function() {
+      var pagerQty = 0,
+      breakPoint = 0,
+      counter = 0;
+      // if moveSlides is specified by the user
+      if (slider.settings.moveSlides > 0) {
+        if (slider.settings.infiniteLoop) {
+          pagerQty = Math.ceil(slider.children.length / el.getMoveBy());
+        } else {
+          // when breakpoint goes above children length, counter is the number of pages
+          while (breakPoint < slider.children.length) {
+            ++pagerQty;
+            breakPoint = counter + getNumberSlidesShowing();
+            counter += slider.settings.moveSlides <= getNumberSlidesShowing() ? slider.settings.moveSlides : getNumberSlidesShowing();
+          }
+        }
+      // if moveSlides is 0 (auto) divide children length by sides showing, then round up
+      } else {
+        pagerQty = Math.ceil(slider.children.length / getNumberSlidesShowing());
+      }
+      return pagerQty;
+    };
+
+    /**
+     * Returns the number of individual slides by which to shift the slider
+     */
+    el.getMoveBy = function() {
+      // if moveSlides was set by the user and moveSlides is less than number of slides showing
+      if (slider.settings.moveSlides > 0 && slider.settings.moveSlides <= getNumberSlidesShowing()) {
+        return slider.settings.moveSlides;
+      }
+      // if moveSlides is 0 (auto)
+      return getNumberSlidesShowing();
     };
 
     init();
